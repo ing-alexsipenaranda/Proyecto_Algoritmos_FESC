@@ -1,10 +1,19 @@
 # algoritmos.py
-"""Implementa 5 algoritmos de ordenamiento con contador de comparaciones
-y búsquedas lineal y binaria. Todas las funciones aceptan `key` opcional.
 """
+Módulo de Algoritmos Optimizado
+-------------------------------
+Incluye:
+- 5 algoritmos de ordenamiento con contador de comparaciones
+- Búsqueda lineal y binaria con contador
+- Decorador para medir tiempo de ejecución
+- Función para guardar resultados en CSV
+"""
+
+import time
+import csv
 from typing import Callable, Iterable, List, Tuple
 
-
+# ------------------- Contador -------------------
 class Counter:
     def __init__(self):
         self.count = 0
@@ -12,10 +21,18 @@ class Counter:
     def inc(self, n=1):
         self.count += n
 
+# ------------------- Decorador de tiempo -------------------
+def medir_tiempo(func):
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        resultado = func(*args, **kwargs)
+        end = time.perf_counter()
+        tiempo = end - start
+        return resultado + (tiempo,)  # retorna tupla (resultado, comparaciones, tiempo)
+    return wrapper
 
-# Cada algoritmo recibe arr (iterable) y key (función) y devuelve (sorted_list, comparisons)
-
-
+# ------------------- Algoritmos de Ordenamiento -------------------
+@medir_tiempo
 def bubble_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x: x) -> Tuple[List, int]:
     if counter is None:
         counter = Counter()
@@ -32,7 +49,7 @@ def bubble_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x
             break
     return a, counter.count
 
-
+@medir_tiempo
 def insertion_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x: x) -> Tuple[List, int]:
     if counter is None:
         counter = Counter()
@@ -50,7 +67,7 @@ def insertion_sort(arr: Iterable, counter: Counter = None, key: Callable = lambd
         a[j + 1] = current
     return a, counter.count
 
-
+@medir_tiempo
 def selection_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x: x) -> Tuple[List, int]:
     if counter is None:
         counter = Counter()
@@ -65,7 +82,7 @@ def selection_sort(arr: Iterable, counter: Counter = None, key: Callable = lambd
         a[i], a[min_idx] = a[min_idx], a[i]
     return a, counter.count
 
-
+@medir_tiempo
 def merge_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x: x) -> Tuple[List, int]:
     if counter is None:
         counter = Counter()
@@ -95,7 +112,7 @@ def merge_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x:
     res = msort(a)
     return res, counter.count
 
-
+@medir_tiempo
 def quick_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x: x) -> Tuple[List, int]:
     if counter is None:
         counter = Counter()
@@ -105,9 +122,7 @@ def quick_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x:
         if len(lst) <= 1:
             return lst
         pivot = lst[len(lst) // 2]
-        left = []
-        equal = []
-        right = []
+        left, equal, right = [], [], []
         for item in lst:
             counter.inc()
             if key(item) < key(pivot):
@@ -121,9 +136,7 @@ def quick_sort(arr: Iterable, counter: Counter = None, key: Callable = lambda x:
     res = qsort(a)
     return res, counter.count
 
-
-# BÚSQUEDAS
-
+# ------------------- Búsquedas -------------------
 def linear_search(arr: Iterable, target, key: Callable = lambda x: x) -> Tuple[int, int]:
     c = Counter()
     for i, item in enumerate(arr):
@@ -132,13 +145,10 @@ def linear_search(arr: Iterable, target, key: Callable = lambda x: x) -> Tuple[i
             return i, c.count
     return -1, c.count
 
-
 def binary_search(arr: Iterable, target, key: Callable = lambda x: x) -> Tuple[int, int]:
-    # arr debe estar ordenado por key
     c = Counter()
     a = list(arr)
-    lo = 0
-    hi = len(a) - 1
+    lo, hi = 0, len(a) - 1
     while lo <= hi:
         mid = (lo + hi) // 2
         c.inc()
@@ -149,28 +159,42 @@ def binary_search(arr: Iterable, target, key: Callable = lambda x: x) -> Tuple[i
         else:
             hi = mid - 1
     return -1, c.count
+
+# ------------------- Guardar resultados en CSV -------------------
+def guardar_resultados_csv(nombre_archivo: str, datos: List[dict]):
+    """Recibe lista de dicts y guarda en CSV"""
+    if not datos:
+        return
+    campos = list(datos[0].keys())
+    with open(nombre_archivo, mode='w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=campos)
+        writer.writeheader()
+        writer.writerows(datos)
+
+# ------------------- Ejemplo de uso -------------------
 if __name__ == "__main__":
-    datos_prueba = [5, 2, 9, 1, 5, 6]
+    # Datos de prueba
+    datos = [5, 2, 9, 1, 5, 6]
 
-    print("Datos originales:", datos_prueba)
+    algoritmos = [
+        ("Bubble Sort", bubble_sort),
+        ("Insertion Sort", insertion_sort),
+        ("Selection Sort", selection_sort),
+        ("Merge Sort", merge_sort),
+        ("Quick Sort", quick_sort)
+    ]
 
-    # ORDENAMIENTOS
-    print("\n--- ORDENAMIENTOS ---")
-    for nombre, algoritmo in [
-        ("Burbuja", bubble_sort),
-        ("Inserción", insertion_sort),
-        ("Selección", selection_sort),
-        ("MergeSort", merge_sort),
-        ("QuickSort", quick_sort),
-    ]:
-        ordenados, comps = algoritmo(datos_prueba)
-        print(f"{nombre:10}: {ordenados} | Comparaciones: {comps}")
+    resultados = []
+    for nombre, alg in algoritmos:
+        sorted_list, comps, tiempo = alg(datos)
+        print(f"{nombre}: {sorted_list} | Comparaciones: {comps} | Tiempo: {tiempo:.6f}s")
+        resultados.append({
+            "algoritmo": nombre,
+            "comparaciones": comps,
+            "tiempo_segundos": tiempo,
+            "dataset": datos
+        })
 
-    # BÚSQUEDAS
-    print("\n--- BÚSQUEDAS ---")
-    ordenados, _ = quick_sort(datos_prueba)
-    idx, comps = linear_search(ordenados, 5)
-    print(f"Búsqueda lineal (5): índice={idx}, comparaciones={comps}")
-
-    idx, comps = binary_search(ordenados, 5)
-    print(f"Búsqueda binaria (5): índice={idx}, comparaciones={comps}")
+    # Guardar resultados en CSV
+    guardar_resultados_csv("resultados_algoritmos.csv", resultados)
+    print("\n✅ Resultados guardados en resultados_algoritmos.csv")

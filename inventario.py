@@ -1,8 +1,8 @@
-# inventario.py
 import random
 import string
 
 class Producto:
+    """Clase que representa un producto en el inventario."""
     def __init__(self, nombre, precio, stock, ventas, categoria):
         self.nombre = nombre
         self.precio = precio
@@ -11,10 +11,13 @@ class Producto:
         self.categoria = categoria
 
     def __repr__(self):
-        return f"{self.nombre} | Precio: {self.precio} | Ventas: {self.ventas}"
+        return f"{self.nombre} | Precio: ${self.precio} | Ventas: {self.ventas} | Stock: {self.stock} | Categoria: {self.categoria}"
 
 # ------------------- Generar productos aleatorios -------------------
 def generar_productos(n=1000):
+    """
+    Genera una lista de n productos aleatorios.
+    """
     categorias = ['Electrónica', 'Hogar', 'Seguridad', 'Ropa', 'Deportes']
     productos = []
 
@@ -31,24 +34,44 @@ def generar_productos(n=1000):
 # ------------------- Ordenamiento -------------------
 def ordenar_productos(productos, clave='precio', reverse=False):
     """
-    clave: 'precio' o 'nombre'
-    reverse: True para orden descendente
+    Ordena productos según la clave ('precio' o 'nombre') y orden.
     """
     return sorted(productos, key=lambda x: getattr(x, clave), reverse=reverse)
 
 # ------------------- Búsqueda por rango de precios -------------------
 def buscar_por_rango_precio(productos, minimo, maximo):
+    """
+    Retorna los productos cuyo precio está entre minimo y maximo.
+    """
     return [p for p in productos if minimo <= p.precio <= maximo]
 
 # ------------------- Top 10 productos más vendidos -------------------
 def top_10_mas_vendidos(productos):
+    """
+    Retorna los 10 productos con más ventas.
+    """
     return ordenar_productos(productos, clave='ventas', reverse=True)[:10]
+
+# ------------------- Estadísticas resumidas -------------------
+def estadisticas(productos):
+    precios = [p.precio for p in productos]
+    ventas = [p.ventas for p in productos]
+    return {
+        "precio_min": min(precios),
+        "precio_max": max(precios),
+        "precio_prom": round(sum(precios)/len(precios), 2),
+        "ventas_max": max(ventas),
+        "ventas_prom": round(sum(ventas)/len(ventas), 2)
+    }
 
 # ------------------- Ejemplo de uso -------------------
 if __name__ == "__main__":
     productos = generar_productos(1000)
-
     print("✅ Productos generados")
+
+    # Estadísticas generales
+    stats = estadisticas(productos)
+    print(f"\n📊 Estadísticas generales: {stats}")
 
     # Ordenar por precio ascendente
     productos_ordenados = ordenar_productos(productos, clave='precio')
@@ -65,7 +88,6 @@ if __name__ == "__main__":
     print(f"\n🔎 Productos entre $100 y $200: {len(rango)} encontrados")
     print(rango[:10])
 
-    # Top 10 más vendidos
     top_ventas = top_10_mas_vendidos(productos)
     print("\n🏆 Top 10 productos más vendidos:")
     print(top_ventas)

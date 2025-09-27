@@ -96,3 +96,9 @@ Este proyecto sigue un flujo modular:
 5. Aplicación real de inventario  
 
 Se puede ejecutar de manera independiente cada módulo o de manera completa para un análisis integral.
+
+
+![Gráfica de heatmap](screenshots/heatmap.png)
+![Gráfica de media data set](screenshots/mediadataset.png)
+![Gráfica de media y varianza](screenshots/heatmap.png)
+![Evidencia de jupyter](screenshots/jupyter.png)
